@@ -5,7 +5,7 @@ import http from "../http";
 import { IServicos } from "../interfaces/IServicos";
 import CalendarComponent from "./CalendarComponent";
 
-const ListaServicos = () => {
+const ListaServicos: React.FC = () => {
   const [servicos, setServicos] = useState<IServicos[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -76,10 +76,11 @@ const ListaServicos = () => {
           </ListItem>
         ))}
       </List>
-      {mostrarCalendario && (
+      {mostrarCalendario && servicoSelecionado && (
         <CalendarComponent
           openCalendar={mostrarCalendario}
           onClose={() => setMostrarCalendario(false)}
+          servicoSelecionado={servicoSelecionado}
         />
       )}
     </Box>

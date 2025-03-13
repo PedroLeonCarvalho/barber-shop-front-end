@@ -11,21 +11,25 @@ import { ptBR } from "date-fns/locale";
 
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import TimeSlotsComponent from "./TimeSlotsComponent";
+import { ITimeSlots } from "../interfaces/ITimeSlots";
 
 interface CalendarProps {
   openCalendar: boolean;
   onClose: () => void;
+  servicoSelecionado: IServicos;
 }
 
 const CalendarComponent: React.FC<CalendarProps> = ({
   openCalendar,
   onClose,
+  servicoSelecionado,
 }) => {
   const [selectedDate, setSelectedDate] = useState<Dayjs>(dayjs());
   const [barbeiros, setBarbeiros] = useState<IBarbeiro[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [error, setError] = useState<String | null>(null);
   const [selectedBarbeiro, setSelectedBarbeiro] = useState<number | null>(null);
+  const [timeSlots, setTimeSlots] = useState<ITimeSlots[]>([]);
 
   function handleBarbeiroSelecionado(barbeiro: number) {
     setSelectedBarbeiro(barbeiro);
@@ -33,24 +37,10 @@ const CalendarComponent: React.FC<CalendarProps> = ({
   }
 
   useEffect(() => {
-    if (selectedBarbeiro) {
-      // Quando barbeiro ou selectedDate mudam, faça a requisição à API
-      http
-        .get(
-          `/info/timeslots?date=${selectedDate}&barberId=${selectedBarbeiro}`
-        )
-        .then((response) => {
-          // Lógica para lidar com os dados da API
-          console.log(response.data);
-        })
-        .catch((error) => {
-          console.error("Erro ao buscar dados:", error);
-        });
-    }
-  }, [selectedBarbeiro, selectedDate]);
-
-  useEffect(() => {
     if (selectedBarbeiro && selectedDate) {
+      setLoading(false);
+      setError(null); // Resetando erro antes da requisição
+      setTimeSlots([]); // Resetando timeSlots para evitar exibição de dados antigos
       const formattedDate = dayjs(selectedDate).format("YYYY-MM-DD"); // Garante a formatação correta
       // Quando barbeiro ou selectedDate mudam, faça a requisição à API
       http
@@ -59,10 +49,11 @@ const CalendarComponent: React.FC<CalendarProps> = ({
         )
         .then((response) => {
           // Lógica para lidar com os dados da API
-          console.log(response.data);
+          setTimeSlots(response.data);
         })
         .catch((error) => {
           console.error("Erro ao buscar dados:", error);
+          setError("Data indisponível. Selecione outra data.");
         });
     }
   }, [selectedBarbeiro, selectedDate]);
@@ -123,13 +114,33 @@ const CalendarComponent: React.FC<CalendarProps> = ({
               }}
             />
             <Box> Escolha o barbeiro :</Box>
+            <Box>
+              <BarbeirosListaComponent
+                onSelectBarbeiro={handleBarbeiroSelecionado}
+              />
+            </Box>
           </LocalizationProvider>
-          <Box>
-            <BarbeirosListaComponent
-              onSelectBarbeiro={handleBarbeiroSelecionado}
-            />
-          </Box>
-          <Box></Box>
+          {/* Renderiza a mensagem de erro, se houver */}
+          {error ? (
+            <Typography color="error" variant="body1">
+              {error}
+            </Typography>
+          ) : (
+            <Box>
+              {timeSlots.length > 0 ? (
+                <TimeSlotsComponent
+                  timeSlots={timeSlots}
+                  servicoSelecionado={servicoSelecionado}
+                  appointmentDate={selectedDate.format("YYYY-MM-DD")}
+                  barberId={selectedBarbeiro ?? 0}
+                />
+              ) : loading ? (
+                <Typography variant="body1">
+                  Nenhum horário disponível.
+                </Typography>
+              ) : null}
+            </Box>
+          )}
         </Box>
       </Modal>
     </div>
