@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Avatar,
   List,
@@ -11,13 +11,18 @@ import {
 import http from "../http";
 import IBarbeiro from "../interfaces/IBarbeiro";
 
-const BarbeirosListaComponent = () => {
+interface BarbeirosListaComponentProps {
+  onSelectBarbeiro: (barbeiro: number) => void; // Declara a função recebida do pai
+}
+
+const BarbeirosListaComponent: React.FC<BarbeirosListaComponentProps> = ({
+  onSelectBarbeiro,
+}) => {
   const [barbeiros, setBarbeiros] = useState<IBarbeiro[]>([]);
 
-  // Simulando chamada ao back-end
   useEffect(() => {
     http
-      .get<IBarbeiro[]>("http://localhost:8080/user/barbers") // Substitua pela URL real do seu back-end
+      .get<IBarbeiro[]>("http://localhost:8080/user/barbers")
       .then((response) => {
         setBarbeiros(response.data);
       })
@@ -32,7 +37,10 @@ const BarbeirosListaComponent = () => {
             key={barbeiro.id}
             src={barbeiro.profile_picture}
             alt={barbeiro.name}
-            sx={{ width: 56, height: 56 }}
+            sx={{ width: 56, height: 56, cursor: "pointer" }} // Adiciona cursor de clique
+            onClick={() => {
+              onSelectBarbeiro(barbeiro.id);
+            }} // Evento de clique
           >
             {barbeiro.name.charAt(0)}
           </Avatar>
