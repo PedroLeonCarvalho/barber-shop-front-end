@@ -85,6 +85,8 @@ const CalendarComponent: React.FC<CalendarProps> = ({
     left: "50%",
     transform: "translate(-50%, -50%)",
     width: 400,
+    maxHeight: "80vh", // Limita a altura máxima para 80% da altura da viewport
+    overflowY: "auto", // Adiciona rolagem vertical caso o conteúdo ultrapasse a altura máxima
     bgcolor: "background.paper",
     border: "2px solid #000",
     boxShadow: 24,
